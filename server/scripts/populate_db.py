@@ -3,9 +3,11 @@ import django
 import sys
 
 # Set up Django environment
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
+
 
 from shop.models import Category, Product, ProductSize, ProductColor
 

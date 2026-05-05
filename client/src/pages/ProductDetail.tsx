@@ -15,6 +15,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { getColorHex } from "@/utils/colors";
 import { cn } from "@/lib/utils";
 import { products as staticProducts } from "@/data/products";
+import { getMediaUrl } from "@/utils/media";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,23 +42,30 @@ export default function ProductDetail() {
       try {
         let data;
         try {
-          data = await productService.getProductById(id);
+          data = await productService.getProductById(String(id));
         } catch (e) {
-          data = staticProducts.find(p => p.id === id);
+          data = staticProducts.find(p => String(p.id) === String(id));
         }
-        if (!data) data = staticProducts.find(p => p.id === id);
+        if (!data) data = staticProducts.find(p => String(p.id) === String(id));
 
         if (data) {
           setProduct(data);
-          let related;
+          let related = [];
           try {
-            related = await productService.getProducts({ category: data.category });
-            if (!related || related.length === 0)
+            const resp = await productService.getProducts({ category: data.category });
+            // Handle both paginated {results: []} and non-paginated [] responses
+            const list = resp.results || (Array.isArray(resp) ? resp : []);
+            
+            if (list.length === 0) {
               related = staticProducts.filter(p => p.category === data.category);
+            } else {
+              related = list;
+            }
           } catch (e) {
             related = staticProducts.filter(p => p.category === data.category);
           }
-          setRelatedProducts(related.filter((p: any) => p.id !== data.id).slice(0, 4));
+          const finalRelated = Array.isArray(related) ? related : [];
+          setRelatedProducts(finalRelated.filter((p: any) => p.id !== data.id).slice(0, 4));
           document.title = `${data.name} | SHOP.CO`;
           window.scrollTo(0, 0);
         }
@@ -180,9 +188,7 @@ export default function ProductDetail() {
         <div className="flex flex-col-reverse md:flex-row gap-4 lg:gap-6">
            <div className="flex md:flex-col gap-3 sm:gap-4 overflow-x-auto md:overflow-visible no-scrollbar shrink-0">
              {product.colors.map((color: any) => {
-               const colorImg = color.image
-                 ? color.image.startsWith("http") ? color.image : `http://127.0.0.1:8000${color.image}`
-                 : product.image;
+               const colorImg = color.image ? getMediaUrl(color.image) : getMediaUrl(product.image);
                return (
                  <button
                    key={color.name}
@@ -202,11 +208,7 @@ export default function ProductDetail() {
            <div className="flex-1 relative group aspect-[4/5] bg-zinc-100 dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-2xl border border-primary/5 transform-gpu transition-all duration-700 hover:shadow-primary/10">
               <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
               <OptimizedImage
-                src={
-                  selectedColor?.image
-                    ? selectedColor.image.startsWith("http") ? selectedColor.image : `http://127.0.0.1:8000${selectedColor.image}`
-                    : product.image.startsWith("http") ? product.image : `http://127.0.0.1:8000${product.image}`
-                }
+                src={selectedColor?.image ? getMediaUrl(selectedColor.image) : getMediaUrl(product.image)}
                 alt={product.name}
                 className="w-full h-full object-cover transition-all duration-1000 ease-in-out transform group-hover:scale-105"
                 key={selectedColor?.name}

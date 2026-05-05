@@ -5,7 +5,7 @@ from .views import CategoryViewSet, ProductViewSet, OrderViewSet,CartViewSet ,Wi
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
-router.register(r'products', ProductViewSet)
+router.register(r'products', ProductViewSet, basename='product')
 router.register(r'orders', OrderViewSet, basename='order')
 router.register(r'cart', CartViewSet, basename='cart')
 

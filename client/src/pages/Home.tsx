@@ -110,7 +110,7 @@ export default function Home() {
     const fetchHomeItems = async () => {
       try {
         const data = await productService.getProducts();
-        setDbProducts(data);
+        setDbProducts(data.results || data);
       } catch (err) {
         console.error("Home products fetch error:", err);
       } finally {

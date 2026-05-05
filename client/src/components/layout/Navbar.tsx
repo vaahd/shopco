@@ -28,7 +28,8 @@ export function Navbar() {
       if (searchQuery.trim().length >= 2) {
         try {
           const data = await productService.getProducts({ search: searchQuery });
-          setSuggestions(data.slice(0, 5));
+          const productsList = data.results || data;
+          setSuggestions(productsList.slice(0, 5));
         } catch (e) {
           const fallback = staticProducts.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5);
           setSuggestions(fallback);

@@ -167,3 +167,29 @@
 .shake {
   animation: shake 0.2s ease-in-out 0s 2;
 }
+
+/* Premium UI Utilities */
+.glass {
+  @apply bg-background/60 backdrop-blur-xl border border-white/10;
+}
+
+.glass-dark {
+  @apply bg-black/40 backdrop-blur-xl border border-white/5;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary/60;
+}
+
+.hover-lift {
+  @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg;
+}
+
+.subtle-ring {
+  @apply focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 outline-none;
+}
+
+::selection {
+  @apply bg-primary/10 text-primary;
+}
+

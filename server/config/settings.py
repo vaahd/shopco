@@ -1,11 +1,15 @@
 from pathlib import Path
 from datetime import timedelta
+import os
+from dotenv import load_dotenv
+
+load_dotenv() # Load variables from .env file
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-u_%eyf411%jo^b59y_85mac-_#r=t1ue^ijl54mqapo&8yp7j*'
-DEBUG = True
-ALLOWED_HOSTS = []
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-u_%eyf411%jo^b59y_85mac-_#r=t1ue^ijl54mqapo&8yp7j*')
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -54,11 +58,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'shopco_db', 
-        'USER': 'shopco_user',       
-        'PASSWORD': 'shopco123', 
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME', 'shopco_db'), 
+        'USER': os.environ.get('DB_USER', 'shopco_user'),       
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'shopco123'), 
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
         'CONN_MAX_AGE': 0,
         'OPTIONS': {
             'connect_timeout': 10,
@@ -79,6 +83,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -92,7 +97,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -101,9 +106,8 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:8080",
-]
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:8080').split(',')
+if os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True':
+    CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = "authentication.User"

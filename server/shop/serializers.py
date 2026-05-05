@@ -54,8 +54,11 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
     def get_image(self, obj):
+        request = self.context.get('request')
         if obj.image:
-            return f"http://127.0.0.1:8000/media/{obj.image.name.split('media/')[-1]}"
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
         return None
 
 
@@ -77,8 +80,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'product_name', 'product_image', 'quantity', 'size', 'color', 'price']
 
     def get_product_image(self, obj):
+        request = self.context.get('request')
         if obj.product and obj.product.image:
-            return f"http://127.0.0.1:8000/media/{obj.product.image.name.split('media/')[-1]}"
+            if request:
+                return request.build_absolute_uri(obj.product.image.url)
+            return obj.product.image.url
         return None
 
 

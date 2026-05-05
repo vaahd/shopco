@@ -11,6 +11,8 @@ import { products, categories } from "@/data/products";
 export default function ProductListing() {
   const [dbProducts, setDbProducts] = useState<any[]>([]);
   const [dbCategories, setDbCategories] = useState<any[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const filterParam = searchParams.get("filter");
@@ -36,11 +38,26 @@ export default function ProductListing() {
     const loadItems = async () => {
       setIsLoading(true);
       try {
+        let ordering = "-created_at";
+        if (sortBy === "low") ordering = "price";
+        if (sortBy === "high") ordering = "-price";
+        if (sortBy === "popular") ordering = "-rating";
+
         const data = await productService.getProducts({
           category: selectedCategory !== "All" ? selectedCategory : undefined,
-          search: searchQuery || undefined
-        });
-        setDbProducts(data);
+          search: searchQuery || undefined,
+          filter: filterParam || undefined,
+          page: currentPage,
+          ordering: ordering
+        } as any);
+
+        if (data.results) {
+          setDbProducts(data.results);
+          setTotalCount(data.count);
+        } else {
+          setDbProducts(data);
+          setTotalCount(data.length);
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -48,23 +65,26 @@ export default function ProductListing() {
       }
     };
     loadItems();
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, filterParam, sortBy, currentPage]);
 
   const filtered = useMemo(() => {
     const dataSource = dbProducts.length > 0 ? dbProducts : products;
     let result = [...dataSource];
 
-    if (selectedCategory !== "All" && dbProducts.length === 0) {
-      result = result.filter((p) => p.category === selectedCategory);
+    // Note: Backend handles most filtering now, this is for static data fallback or fine-tuning
+    if (dbProducts.length === 0) {
+       if (selectedCategory !== "All") result = result.filter((p) => p.category === selectedCategory);
+       if (filterParam === "sale") result = result.filter((p) => p.discount);
+       if (filterParam === "new") result = result.filter((p) => p.is_new);
+       result = result.filter((p) => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]);
+       if (sortBy === "low") result = [...result].sort((a, b) => Number(a.price) - Number(b.price));
+       if (sortBy === "high") result = [...result].sort((a, b) => Number(b.price) - Number(a.price));
+       if (sortBy === "popular") result = [...result].sort((a, b) => Number(b.rating) - Number(a.rating));
+    } else {
+       // Just price filter if backend doesn't support it yet
+       result = result.filter((p) => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]);
     }
-
-    if (filterParam === "sale") result = result.filter((p) => p.discount);
-    if (filterParam === "new") result = result.filter((p) => p.is_new);
-    result = result.filter((p) => Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1]);
     
-    if (sortBy === "low") result = [...result].sort((a, b) => Number(a.price) - Number(b.price));
-    if (sortBy === "high") result = [...result].sort((a, b) => Number(b.price) - Number(a.price));
-    if (sortBy === "popular") result = [...result].sort((a, b) => Number(b.rating) - Number(a.rating));
     return result;
   }, [dbProducts, filterParam, priceRange, sortBy, selectedCategory]);
 
@@ -366,6 +386,33 @@ export default function ProductListing() {
                 <span className="relative z-10">Reset Discovery</span>
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               </Button>
+            </div>
+          )}
+          
+          {/* Pagination */}
+          {!isLoading && totalCount > 12 && (
+            <div className="mt-20 flex items-center justify-between border-t border-primary/5 pt-10">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+                Page {currentPage} of {Math.ceil(totalCount / 12)}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  disabled={currentPage === 1}
+                  onClick={() => { setCurrentPage(prev => prev - 1); window.scrollTo(0, 0); }}
+                  className="rounded-full px-8 py-4 text-[10px] font-black uppercase tracking-widest border-2 disabled:opacity-20"
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={currentPage >= Math.ceil(totalCount / 12)}
+                  onClick={() => { setCurrentPage(prev => prev + 1); window.scrollTo(0, 0); }}
+                  className="rounded-full px-8 py-4 text-[10px] font-black uppercase tracking-widest border-2 disabled:opacity-20"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
           

@@ -18,16 +18,29 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 
+from rest_framework.pagination import PageNumberPagination
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+from rest_framework.filters import OrderingFilter, SearchFilter
+
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset           = Product.objects.all()
+    queryset           = Product.objects.all() # Fallback for DRF basename detection
     serializer_class   = ProductSerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class   = StandardResultsSetPagination
+    filter_backends    = [OrderingFilter]
+    ordering_fields    = ['price', 'rating', 'created_at']
+    ordering           = ['-created_at']
 
     def get_serializer_context(self):
         return {'request': self.request}
 
     def get_queryset(self):
-        queryset    = Product.objects.all().order_by('-created_at')
+        queryset = Product.objects.all().select_related('category').prefetch_related('sizes', 'colors', 'reviews').order_by('-created_at')
         category    = self.request.query_params.get('category')
         search      = self.request.query_params.get('search')
         filter_type = self.request.query_params.get('filter')

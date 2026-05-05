@@ -1,7 +1,7 @@
 import apiClient from '@/api/apiClient';
 
 export const productService = {
-  getProducts: async (params = {}) => {
+  getProducts: async (params: { category?: string; search?: string; filter?: string; page?: number } = {}) => {
     try {
       const response = await apiClient.get('products/', { params });
       return response.data;

@@ -6,6 +6,7 @@ import { Heart } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { toggleWishlist, toggleWishlistOnServer } from "@/store/slices/wishlistSlice";
 import { toast } from "sonner";
+import { getMediaUrl } from "@/utils/media";
 
 interface ProductCardProps {
   product: Product;
@@ -39,11 +40,7 @@ export function ProductCard({ product }: ProductCardProps) {
     <Link to={`/products/${product.id}`} className="group block animate-fade-in relative">
       <div className="aspect-square rounded-[1.5rem] overflow-hidden mb-4 bg-[#F0EEED] dark:bg-zinc-900 relative">
         <OptimizedImage
-          src={
-            product.image?.startsWith("http")
-              ? product.image
-              : `http://127.0.0.1:8000${product.image}`
-          }
+          src={getMediaUrl(product.image)}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
         />

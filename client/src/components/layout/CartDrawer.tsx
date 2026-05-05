@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "@/store";
 import { removeItem, updateQuantity, removeItemFromServer, updateQuantityOnServer } from "@/store/slices/cartSlice";
 import { Button } from "@/components/ui/button";
+import { getMediaUrl } from "@/utils/media";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -83,7 +84,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div key={`${item.product.id}-${item.size}-${getColorName(item.color)}`} className="flex gap-4 group">
                 <div className="w-24 h-24 rounded-2xl overflow-hidden bg-secondary border border-primary/5 flex-shrink-0">
                   <img
-                    src={item.product.image?.startsWith("http") ? item.product.image : `http://127.0.0.1:8000${item.product.image}`}
+                    src={getMediaUrl(item.product.image)}
                     alt={item.product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
