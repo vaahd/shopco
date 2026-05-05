@@ -6,8 +6,9 @@ export const getMediaUrl = (path: string | null | undefined) => {
   if (path.startsWith('http')) return path;
   
   // Ensure path starts with /
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  const mediaPath = cleanPath.startsWith('media/') ? cleanPath : `media/${cleanPath}`;
   
-  // Remove /media if it's already in the base
-  return `${MEDIA_BASE.replace(/\/$/, '')}${normalizedPath}`;
+  return `${MEDIA_BASE.replace(/\/$/, '')}/${mediaPath}`;
 };
+
