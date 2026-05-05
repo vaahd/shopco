@@ -105,16 +105,18 @@ export default function ProductDetail() {
     </div>
   );
 
-  if (!product) {
+  if (!product || !product.colors || !product.sizes) {
     return (
       <div className="container-shop py-20 text-center animate-fade-in">
         <h1 className="text-2xl font-black italic uppercase mb-4">Product not found</h1>
+        <p className="text-muted-foreground mb-8">The product you are looking for does not exist or has been removed.</p>
         <Link to="/products" className="text-muted-foreground hover:text-foreground underline uppercase text-xs font-bold tracking-widest">
           Back to collection
         </Link>
       </div>
     );
   }
+
 
   const originalPrice = product.original_price || product.originalPrice;
   const reviewCount   = product.review_count ?? product.reviewCount ?? product?.reviews?.length ?? 0;
