@@ -49,24 +49,34 @@ export default function ProductDetail() {
         if (!data) data = staticProducts.find(p => String(p.id) === String(id));
 
         if (data) {
-          setProduct(data);
+          // Create a shallow copy to normalize without mutating static data
+          const normalizedData = { ...data };
+          
+          if (normalizedData.colors && normalizedData.colors.length > 0 && typeof normalizedData.colors[0] === 'string') {
+             normalizedData.colors = normalizedData.colors.map((c: string) => ({ name: c, image: normalizedData.colorImages ? normalizedData.colorImages[c] : null }));
+          }
+          if (normalizedData.sizes && normalizedData.sizes.length > 0 && typeof normalizedData.sizes[0] === 'string') {
+             normalizedData.sizes = normalizedData.sizes.map((s: string, i: number) => ({ id: i, size: s }));
+          }
+
+          setProduct(normalizedData);
           let related = [];
           try {
-            const resp = await productService.getProducts({ category: data.category });
+            const resp = await productService.getProducts({ category: normalizedData.category });
             // Handle both paginated {results: []} and non-paginated [] responses
             const list = resp.results || (Array.isArray(resp) ? resp : []);
             
             if (list.length === 0) {
-              related = staticProducts.filter(p => p.category === data.category);
+              related = staticProducts.filter(p => p.category === normalizedData.category);
             } else {
               related = list;
             }
           } catch (e) {
-            related = staticProducts.filter(p => p.category === data.category);
+            related = staticProducts.filter(p => p.category === normalizedData.category);
           }
           const finalRelated = Array.isArray(related) ? related : [];
-          setRelatedProducts(finalRelated.filter((p: any) => p.id !== data.id).slice(0, 4));
-          document.title = `${data.name} | SHOP.CO`;
+          setRelatedProducts(finalRelated.filter((p: any) => p.id !== normalizedData.id).slice(0, 4));
+          document.title = `${normalizedData.name} | SHOP.CO`;
           window.scrollTo(0, 0);
         }
       } catch (e) {
